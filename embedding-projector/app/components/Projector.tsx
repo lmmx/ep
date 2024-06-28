@@ -4,7 +4,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import { DataSet, DataPoint } from '../lib/DataSet';
 import { DimensionalityReducer } from '../lib/DimensionalityReducer';
 import { SearchComponent } from '../lib/SearchComponent';
-import { NearestNeighborSearcher } from '../lib/NearestNeighborSearcher';
 import { ProjectorScatterPlotAdapter } from './ProjectorScatterPlotAdapter';
 import { loadEmbeddingsInChunks } from '../lib/dataLoader';
 
@@ -20,27 +19,32 @@ const Projector: React.FC = () => {
 
   const dimensionalityReducer = useRef(new DimensionalityReducer());
   const searcher = useRef<SearchComponent | null>(null);
-  const nearestNeighborSearcher = useRef<NearestNeighborSearcher | null>(null);
   const projectorScatterPlotAdapter = useRef<ProjectorScatterPlotAdapter | null>(null);
 
   useEffect(() => {
     const loadData = async () => {
-      let points: number[][] = [];
-      let metadata: { [key: string]: any }[] = [];
+      try {
+        let points: number[][] = [];
+        let metadata: { [key: string]: any }[] = [];
 
-      for await (const { chunk, nSamples, nDimensions } of loadEmbeddingsInChunks()) {
-        for (let i = 0; i < chunk.length; i += nDimensions) {
-          points.push(Array.from(chunk.subarray(i, i + nDimensions)));
-          metadata.push({ index: points.length - 1 });
+        for await (const { chunk, nSamples, nDimensions } of loadEmbeddingsInChunks()) {
+          console.log(`Loaded chunk with ${chunk.length / nDimensions} points`);
+          for (let i = 0; i < chunk.length; i += nDimensions) {
+            points.push(Array.from(chunk.subarray(i, i + nDimensions)));
+            metadata.push({ index: points.length - 1 });
+          }
         }
-      }
 
-      const newDataSet = new DataSet(
-        points.map((vector, index) => new DataPoint(vector, metadata[index]))
-      );
-      setDataSet(newDataSet);
-      searcher.current = new SearchComponent(newDataSet);
-      nearestNeighborSearcher.current = new NearestNeighborSearcher(newDataSet);
+        console.log(`Total points loaded: ${points.length}`);
+
+        const newDataSet = new DataSet(
+          points.map((vector, index) => new DataPoint(vector, metadata[index]))
+        );
+        setDataSet(newDataSet);
+        searcher.current = new SearchComponent(newDataSet);
+      } catch (error) {
+        console.error('Error loading data:', error);
+      }
     };
 
     loadData();
@@ -48,6 +52,7 @@ const Projector: React.FC = () => {
 
   useEffect(() => {
     if (dataSet && canvasRef.current) {
+      console.log('Initializing ProjectorScatterPlotAdapter');
       projectorScatterPlotAdapter.current = new ProjectorScatterPlotAdapter(canvasRef.current);
       projectData();
     }
@@ -55,13 +60,19 @@ const Projector: React.FC = () => {
 
   const projectData = async () => {
     if (dataSet) {
-      const newProjectedData = await dimensionalityReducer.current.reduceDimensions(
-        dataSet.points.map(p => p.vector),
-        reductionMethod,
-        3
-      );
-      setProjectedData(newProjectedData);
-      projectorScatterPlotAdapter.current?.updateScatterPlotPositions(newProjectedData);
+      try {
+        console.log(`Projecting data using ${reductionMethod}`);
+        const newProjectedData = await dimensionalityReducer.current.reduceDimensions(
+          dataSet.points.map(p => p.vector),
+          reductionMethod,
+          3
+        );
+        console.log('Projected data:', newProjectedData);
+        setProjectedData(newProjectedData);
+        projectorScatterPlotAdapter.current?.updateScatterPlotPositions(newProjectedData);
+      } catch (error) {
+        console.error('Error projecting data:', error);
+      }
     }
   };
 
@@ -78,12 +89,7 @@ const Projector: React.FC = () => {
   };
 
   const handlePointClick = (index: number) => {
-    if (nearestNeighborSearcher.current) {
-      const neighbors = nearestNeighborSearcher.current.findNearestNeighbors(index, 10);
-      const neighborIndices = neighbors.map(n => n.index);
-      setHighlightedPoints(neighborIndices);
-      projectorScatterPlotAdapter.current?.highlightPoints(neighborIndices);
-    }
+    // Implement point click handling if needed
   };
 
   return (
