@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react';
 import { loadEmbeddingsInChunks, ChunkData } from '../lib/dataLoader';
 
-export default function Visualizer() {
+export default function Projector() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -15,7 +15,7 @@ export default function Visualizer() {
 
     let animationFrameId: number;
 
-    async function visualize() {
+    async function project() {
       for await (const { progress, chunk, nSamples, nDimensions } of loadEmbeddingsInChunks()) {
         // Clear canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -39,7 +39,7 @@ export default function Visualizer() {
       }
     }
 
-    visualize();
+    project();
 
     return () => {
       cancelAnimationFrame(animationFrameId);

@@ -5,8 +5,8 @@ import { Inter } from 'next/font/google'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Node2Vec Embedding Visualizer',
-  description: 'Visualize node2vec embeddings with progressive loading',
+  title: 'Embedding Projector',
+  description: 'Visualise embeddings with progressive loading',
 }
 
 export default function RootLayout({

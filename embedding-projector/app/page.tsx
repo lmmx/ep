@@ -1,4 +1,4 @@
-import Visualizer from './components/Visualizer';
+import Projector from './components/Projector';
 
 export default function Home() {
   return (
@@ -7,7 +7,7 @@ export default function Home() {
         <h1 className="text-3xl font-bold text-center text-gray-800 mb-4">
           Embedding Projector
         </h1>
-        <Visualizer />
+        <Projector />
       </div>
     </main>
   );
