@@ -15,7 +15,7 @@ export default function Projector() {
 
     let animationFrameId: number;
 
-    async function project() {
+    async function visualize() {
       for await (const { progress, chunk, nSamples, nDimensions } of loadEmbeddingsInChunks()) {
         // Clear canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -39,10 +39,12 @@ export default function Projector() {
       }
     }
 
-    project();
+    visualize();
 
     return () => {
-      cancelAnimationFrame(animationFrameId);
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
     };
   }, []);
 
