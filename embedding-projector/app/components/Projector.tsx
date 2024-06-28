@@ -17,6 +17,8 @@ export default function Projector() {
 
     async function visualize() {
       for await (const { progress, chunk, nSamples, nDimensions } of loadEmbeddingsInChunks()) {
+        if (!ctx || !canvas) break; // Extra check to satisfy TypeScript
+
         // Clear canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -39,7 +41,7 @@ export default function Projector() {
       }
     }
 
-    visualize();
+    visualize().catch(console.error); // Handle any errors in the async function
 
     return () => {
       if (animationFrameId) {
