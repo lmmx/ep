@@ -1,4 +1,4 @@
-class SearchComponent {
+export class SearchComponent {
   private dataSet: DataSet;
 
   constructor(dataSet: DataSet) {
